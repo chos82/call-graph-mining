@@ -1,0 +1,9 @@
+digraph test_graph_package{
+	0 [label="testprogram.pack2"];
+	1 [label="testprogram.pack1"];
+	2 [label="jre" shape="box"];
+	0 -> 0 [label="77, 2, 2, 1, 2"]
+	1 -> 0 [label="27, 1, 4, 1, 1"]
+	1 -> 1 [label="208, 5, 11, 3, 4"]
+	1 -> 2 [label="305, 3, 4, 2, 2"]
+}

@@ -1,0 +1,270 @@
+\documentclass{scrreprt}
+
+% Deutsche Bezeichner (z.B. "Inhaltsverzeichnis")
+\usepackage{ngerman}
+% Deutsche Kodierung
+\usepackage[latin1]{inputenc}
+% Paket für Kopf- Fusszeilen
+\usepackage[automark]{scrpage2}
+% Einbinden der Kopf- Fusszeilen
+\pagestyle{scrheadings}
+% Automatische Links
+\usepackage{hyperref}
+%URLs
+\usepackage{url}
+%Anzeige des Namens bei \nameref
+\usepackage{nameref}
+% Aktiviert EC-Schriftarten
+%\usepackage[T1]{fontenc}
+%\usepackage{ae} % Schöne Schriften für PDF-Dateien
+%Ändern der Seitenränder
+%Tabellen
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+%weitere Pakete für (Tabellen-)Layout
+\usepackage{multirow}
+\usepackage{rotating}
+\usepackage{ragged2e}
+%Drehen von Tabellen
+\usepackage{rotating}
+% Deutsche Silbentrennung
+\usepackage[ngerman]{babel}
+% Setzten der Anführungszeichen
+\usepackage[babel,german=guillemets]{csquotes}
+% Zitate
+\usepackage{cite}
+% Deutsche Zitate
+\usepackage{bibgerm}
+%Paket für Quellcode-Listings
+\usepackage{listings}
+%Paket für Grafiken
+\usepackage{graphicx}
+%Mathematischer Textsatz
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{mathtools}
+
+\usepackage{bbding}
+
+\lstset{language={}, numbers=left, basicstyle=\ttfamily}
+
+\ifoot[]{Christopher Oßner}
+\cfoot{}
+\ofoot[]{\thepage}
+
+%Kommando für römische Ziffern
+\newcommand{\RM}[1]{\MakeUppercase{\romannumeral #1{}}}
+
+%Komanndo für gestürzten Tabellenkopf
+\newcolumntype{R}[1]{%
+>{\begin{turn}{90}\begin{minipage}{#1}%
+\scriptsize\raggedright\hspace{0pt}}l%
+<{\end{minipage}\end{turn}}%
+}
+%Standartspalte
+\newcolumntype{N}{>{\scriptsize}c}
+
+\newcolumntype{x}{%
+>{\raggedright\hspace{0pt}}X%
+}
+
+\begin{document}
+	
+	\chapter{Bug Localisation Framework: Options Synopsis}
+	Usually the \texttt{~--prepare} and \texttt{~--mine} and \texttt{~--class-sampler} (for mining on class level), and maybe \texttt{~--DOTwriter}, is all that is needed. They serve as a convenient interface to the framework, as they execute several tests at once and use the following environment variables to generated parameters for the tools:
+	\begin{itemize}
+		\item \texttt{MINING\_OUT} where all the data will be stored
+		\item \texttt{IBUGS\_DIR} iBUGS directory
+		\item \texttt{JAVA\_1.4} JRE v1.4 compiler and VM
+	\end{itemize}	Not each possible combination of options is checked for validity.
+	The general form for executing \texttt{tools.jar} is: \texttt{<options> [data ]*}
+	
+	
+	\section{\texttt{~--prepare}}
+		Prepares everything for further steps. First the tests associated with the given big ID are copied from the post-fix version to pre-fix version. Then the \texttt{.js} files within \texttt{<iBUGS dir>/instrumentation/lib/js\_variations} are used to generate variations of those tests (usually just a single one). After that we generate a list file containing tests with a likelihood of \texttt{-l} percent. All tests supposed to fail will be included. Then the instrumented version of Rhino is run with those tests (make sure to build it before using the ant task \texttt{buildinstrumented}). Last, all graphs of tests that fail, but are not expected to fail are removed.
+		\subsection{Data}
+			None.
+	
+	\subsection{Options}	
+	\begin{table}[h]
+		\centering
+			\begin{tabular}{@{} *{2}{l}cc @{}}
+				\toprule
+				\textbf{Option} & 
+				\textbf{Description} &
+				\textbf{Required} &
+				\textbf{Flag} \\	
+				\midrule			
+			    \texttt{-fixId=} & ID of the bug to consider (in repository.xml) & \Checkmark & \\
+				\texttt{-l}= & Likelihood to include a test & \Checkmark & \\
+				\texttt{-engine=} & Which Rhino engine to test against ({rhino|rhinoi} & \Checkmark & \\
+				\texttt{-suffix=} & Suffix to append to the output directory & & \\
+				\texttt{-stlg} & Skip test list generation. There must be a file named \texttt{sampled-tests.ls} in Rhino`s test directory. & & \Checkmark \\
+				\bottomrule
+			\end{tabular}
+		\caption{Options for \texttt{~--prepare}}
+	\end{table}
+	
+	
+	\section{\texttt{~--mine}}
+		Converter $\rightarrow$ ParSeMiS $\rightarrow$ uniq $\rightarrow$ Scoring
+				
+		\subsection{Data}
+			List of packages/classes to consider, when converting to classes/methods.
+					
+		\subsection{Options}	
+			\begin{table}[h]
+				\centering
+					\begin{tabularx}{\textwidth}{@{} *{2}{l}cc @{}}
+						\toprule
+						\textbf{Option} & 
+						\textbf{Description} &
+						\textbf{Required} &
+						\textbf{Flag} \\	
+						\midrule
+						\texttt{-i} & \multicolumn{1}{x@{}}{Serialized graph objects to convert} & \Checkmark &  \\
+						\texttt{<level>} & \multicolumn{1}{x@{}}{\texttt{-package|-class|-method|-all}} & \Checkmark &  \\
+						\texttt{[-classList=]} & \multicolumn{1}{x@{}}{Valid for -class. LS file of classes to include} & & \\
+						\texttt{-writeWeights} & \multicolumn{1}{x@{}}{Write weights to LG} &  & \Checkmark \\
+						\texttt{-includeDummies} & \multicolumn{1}{x@{}}{Include dummies (foreign packages, classes) into LG} &  & \Checkmark \\
+						\texttt{-includeJre} & \multicolumn{1}{x@{}}{Include JRE dummies into LG} &  & \Checkmark \\
+						\texttt{-reincludeDummies} & \multicolumn{1}{x@{}}{If dummies (foreign packages, classes) are omitted before, re-include them for entropy ranking} &  & \Checkmark \\
+						\texttt{-reincludeJre} & \multicolumn{1}{x@{}}{If dummies are omitted before, re-include those, representing calls to JRE, for entropy ranking} &  & \Checkmark \\
+						\texttt{-skipConstructors} & \multicolumn{1}{x@{}}{Omit constructors} &  & \Checkmark \\
+					    \texttt{-minFreq=} & \multicolumn{1}{x@{}}{Minimum frequency (default=10)} &  & \\
+						\texttt{-closeGraph} & \multicolumn{1}{x@{}}{Use close graph} &  & \Checkmark \\
+						\texttt{-s} & \multicolumn{1}{x@{}}{Do not print scoring to stdout} &  & \Checkmark \\
+						\texttt{-wof=} & \multicolumn{1}{x@{}}{Write scoring to file. Just pass an ID string here} & & \\
+						\texttt{-sc} & \multicolumn{1}{x@{}}{Skip the converter} & & \Checkmark \\
+						\texttt{-sgm=} & \multicolumn{1}{x@{}}{Skip the graph-mining step. Pass the fragment file to use.} & & \\
+						\texttt{-suffix=} & \multicolumn{1}{x@{}}{Suffix to append to produced output.} & & \\
+						\bottomrule
+					\end{tabularx}
+				\caption{Options for \texttt{~--mine}}
+		\end{table}
+		
+		
+		\section{\texttt{~--class-sampler}}
+		Sample classes to mine. Those within \texttt{failing/fix} will all be included, then we fill up randomly.
+		\subsection{Data}
+			None.
+		
+	\subsection{Options}
+	\begin{table}[h]
+		\centering
+			\begin{tabular}{@{} *{2}{l}cc @{}}
+				\toprule
+				\textbf{Option} & 
+				\textbf{Description} &
+				\textbf{Required} &
+				\textbf{Flag} \\	
+				\midrule			
+			    \texttt{-o} & Output file (a list file) & \Checkmark & \\
+				\texttt{-Id=} & BudID & \Checkmark & \\
+				\texttt{-prefix} & Package identifier & \Checkmark & \\
+				\texttt{-n=} & Number of files (.class) to be included & \Checkmark & \\
+				\texttt{-v} & Verbose mode (print selected classes to stdout) & & \Checkmark \\
+				
+				\bottomrule
+			\end{tabular}
+		\caption{\texttt{bl.tools.ClassSampler}}
+	\end{table}
+	
+	\section{\texttt{~--dot}}
+		Write a serialized graph to a DOT file. All annotations and dummies are included.
+		\subsection{Data}
+			\texttt{<input file> <output file>}
+		
+		\subsection{Options}
+			None.
+	
+	
+	\section{\texttt{~--scoring}}
+		Calulates scores for graph-fragments.
+		\subsection{Data}
+			None.
+	
+		\subsection{Options}	
+			\begin{table}[h]
+				\centering
+					\begin{tabularx}{\textwidth}{@{} *{2}{l}cc @{}}
+						\toprule
+						\textbf{Option} & 
+						\textbf{Description} &
+						\textbf{Required} &
+						\textbf{Flag} \\	
+						\midrule		
+					    \texttt{-i} & The fragments file (ParSeMiS) & \Checkmark & \\	
+					    \texttt{-arff} & \multicolumn{1}{x@{}}{Output ARFF file (needed for entropy based scoring in WEKA)} & \Checkmark & \\			
+					    \texttt{-ser} & \multicolumn{1}{x@{}}{Path to the serialized graph objects that were used to create the fragments file} & \Checkmark & \\
+					    \texttt{-reincludeDummies} & \multicolumn{1}{x@{}}{If dummies were omitted before (only class level), reinclude for entropy score} &  & \Checkmark \\
+						\bottomrule
+					\end{tabularx}
+				\caption{\texttt{bl.postprocessor.Scoring}}
+			\end{table}
+		
+		
+	
+	
+	\section{\texttt{~--converter}}
+		Converts a repository of serialized graphs (AdjacenceList) to another hierarchy level an prints the corresponding graph DB (as LG).
+		\subsection{Data}
+			\texttt{-class [...] [package to consider ]{1, 10}\\
+			-method [...] [class to consider ]{1, 10}}
+	
+	\subsection{Options}	
+	\begin{table}[h]
+		\centering
+			\begin{tabular}{@{} *{3}{l}cc @{}}
+				\toprule
+				\textbf{Set} &
+				\textbf{Option} & 
+				\textbf{Description} &
+				\textbf{Required} &
+				\textbf{Flag} \\	
+				\midrule			
+			    \texttt{-package} &  &  &  &  \\
+			    \texttt{-class} & \texttt{-classList=} & Include only classes in ls file &  &  \\
+			    \texttt{-method} & & & & \\
+			    \texttt{-all} &  &  &  & \\
+			    All Sets & -i & Directory of serialized graphs & \Checkmark &  \\
+			    	& -o & Output directory (LG will get sme name) & \Checkmark & \\
+			    	& -writeWeights & Write weights into LG &  & \Checkmark \\
+			    	& -includeDummies & Write dummy vertices into LG (only class level) & & \Checkmark \\
+			    	& -includeJre & Set if JRE calls should be written to LG & & \Checkmark \\
+			    	& -skipConstructors & Set if constructors should be omitted by the converter & & \Checkmark \\
+				
+				\bottomrule
+			\end{tabular}
+		\caption{\texttt{bl.tools.Converter}}
+	\end{table}
+	
+	\section{\texttt{~--cleaner}}
+		Deletes all tests we did not expect to fail.
+		\subsection{Data}
+			\texttt{<bug id> <path to iBUGS`s repository.xml> <path to serialized graph objects>}
+	
+	\subsection{Options}	
+		None.
+			
+	\section{\texttt{~--copier}}
+		Copies the files mentioned in iBUGS repository.xml as \texttt{<testForFix>} from post-fix version to pre-fix version. javascript files in the parent directory of the test are copied as well. Those are usually the included shell files.
+		\subsection{Data}
+			\texttt{<path to Rhino`s post-fix tests> <bug id> <path to iBUGS repository.xml>}
+	
+	\subsection{Options}	
+		None.
+	
+	\section{\texttt{~--generator}}
+		Generates a list file that includes tests with the specified likelihood, but includes every test that is in \texttt{<iBUGS dir>/output/<fixID>/pre-fix/mozilla/js/tests/failing/fix}.
+		\subsection{Data}
+			\texttt{<location of the tests> <percent of tests to sample>}
+	
+	\subsection{Options}	
+		None.	
+	
+	
+	
+	
+\end{document}
+

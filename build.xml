@@ -1,0 +1,210 @@
+<!-- Useful ant tasks for handling the test repository. Run 'ant usage' to display the usage message-->
+<project name="rhino" default="usage" basedir=".">
+
+  <import file="properties.xml" />
+
+  <target name="buildversion"
+  depends="init-properties,checkDefaultParams">
+    <property name="ant.build.javac.source" value="1.4" />
+    <property name="target-jvm" value="1.4" />
+    <ant target="jar" dir="${versiondirectory}/mozilla/js/rhino" antfile="build.xml"/>
+  </target>
+	
+  <target name="buildinstrumented" depends="init-properties, checkDefaultParams">
+  	<copy todir="${versiondirectory}/mozilla/js/rhino/lib" file="instrumentation\lib\aspectjrt.jar"/>
+  	<copy todir="${versiondirectory}/mozilla/js/rhino/lib" file="instrumentation\lib\instrumentationutils.jar"/>
+  	<!--<copy todir="${versiondirectory}/mozilla/js/rhino/aspectsrc">
+  		<fileset dir="instrumentation\lib\aspectsrc"/>
+  	</copy>-->
+  	<mkdir dir="${versiondirectory}/mozilla/js/rhino/aspectsrc/instrumentation"/>
+  	<copy todir="${versiondirectory}/mozilla/js/rhino/aspectsrc/instrumentation" file="instrumentation\lib\aspectsrc\instrumentation\Trace.aj"/>
+  	<copy todir="${versiondirectory}/mozilla/js/rhino" file="instrumentation\lib\build.xml"/>
+  	<!--<copy todir="${versiondirectory}\mozilla\js\rhino\toolsrc\org\mozilla\javascript\tools\shell" file="instrumentation\lib\Main.java"/>-->
+  	<copy todir="${versiondirectory}/mozilla/js/tests" file="instrumentation\lib\jsDriver.pl"/>
+  	<copy todir="${versiondirectory}/mozilla/js/rhino" file="instrumentation\lib\manifest.txt"/>
+  	<ant target="instrument" dir="${versiondirectory}/mozilla/js/rhino" antfile="build.xml"/>
+  </target>
+	
+	<target name="buildinstrumentedsrc" depends="init-properties, checkDefaultParams">
+	  	<ant target="instrumentsrc" dir="${versiondirectory}/mozilla/js/rhino" antfile="build.xml"/>
+	</target>
+
+  <target name="cleanversion" depends="init-properties,checkDefaultParams">
+    <delete dir="${versiondirectory}/mozilla/js/rhino/build" quiet="true"/>
+  </target>
+	
+  <target name="runalltests" depends="checkDefaultParams">
+  	<tstamp/>
+  	<property location="${versiondirectory}/mozilla/js/tests" name="testdir"/>
+  	<property location="${versiondirectory}/mozilla/js/rhino/build/rhino_ibugs/js_cc.jar" name="rhino_jar"/>
+  	<property location="c:\diplo\antTest\${fixId}_${tag}" name="out_file"/>
+  	<java fork="true" jvm="${JVM1.6}" jar="instrumentation/copier.jar">
+  		<arg value="${testdir}" />
+  	  	<arg value="${fixId}"/>
+  		<arg value="./" />
+  	</java>
+  	<java fork="true" jvm="${JVM1.6}" jar="instrumentation/generator.jar">
+  		<arg value="${testdir}" />
+  		<arg value="1"/>
+  	</java>
+	<exec executable="perl" dir="${testdir}">
+		<arg file="${testdir}/jsDriver.pl"/>
+		<arg value="--engine=rhino"/>
+		<arg value="-j ${JAVA_1.4}/${javapath}"/>
+		<arg value="-c ${rhino_jar}"/>
+		<arg value="-v ${out_file}"/>
+		<arg value="-f ${out_file}_TestResults.html"/>
+		<arg value="-l ${testdir}/sampled-tests.ls" />
+	</exec>
+  	<java fork="true" jvm="${JVM1.6}" jar="instrumentation/cleaner.jar">
+  		<arg value="${out_file}_TestResults.html"/>
+  		<arg value="${fixId}"/>
+  		<arg value="./" />
+  		<arg value="${out_file}_data"/>
+  	</java>
+  	<java fork="true" jvm="${JVM}" jar="instrumentation\converter.jar">
+  		<arg value="${out_file}_data"/>
+  		<arg value="p"/>
+  	</java>
+  </target>
+	
+  <target name="executeshell" depends="checkDefaultParams">
+	<java fork="true" dir="${JVM}" jar="${versiondirectory}/mozilla\js\rhino\build\rhino_ibugs\js_cc.jar"/>
+  </target>
+
+  <target name="runtest" depends="init-properties,checkDefaultParams">
+    <condition property="correctParams">
+      <isset property="testFileName" />
+    </condition>
+    <fail unless="correctParams"
+    message="Please specify the name of the test file (-DtestFileName=...) you want to be run relative to the base directory of the checkout (e.g. versions/12345/pre-fix."
+    status="-1" />
+    <available file="${versiondirectory}/mozilla/js/rhino/build/rhino_ibugs/js.jar" type="file" property="ibugs.rhino.buildpresent"/>
+    <fail unless="ibugs.rhino.buildpresent"
+    message="I cannot find a build in ${versiondirectory}/mozilla/js/rhino/build/rhino_ibugs. Please execute target buildversion for this bug."
+    status="-1" />
+    <dirname file="${versiondirectory}/${testFileName}" property="testDirectory"/>
+    <java fork="true" classname="org.mozilla.javascript.tools.shell.Main">
+       <arg value="-f"/>
+       <!--arg value="${testDirectory}/shell.js"/-->
+       <arg value="${testDirectory}/../shell.js"/>
+       <arg value="${versiondirectory}/${testFileName}"/>
+       <classpath>
+         <pathelement location="${versiondirectory}/mozilla/js/rhino/build/rhino_ibugs/js.jar"/>
+         <pathelement location="${versiondirectory}/mozilla/js/tests/src/jstests.jar"/>
+       </classpath>
+    </java>
+  </target>
+	
+	<target name="runtestinst" depends="init-properties,checkDefaultParams">
+		<tstamp/>
+	    <condition property="correctParams">
+	      <isset property="testFileName" />
+	    </condition>
+	    <fail unless="correctParams"
+	    message="Please specify the name of the test file (-DtestFileName=...) you want to be run relative to the base directory of the checkout (e.g. versions/12345/pre-fix."
+	    status="-1" />
+	    <available file="${versiondirectory}/mozilla/js/rhino/build/rhino_ibugs/js_cc.jar" type="file" property="ibugs.rhino.build_cc_present"/>
+	    <fail unless="ibugs.rhino.build_cc_present"
+	    message="I cannot find a instrumented build in ${versiondirectory}/mozilla/js/rhino/build/rhino_ibugs. Please execute target buildinstrumented for this bug."
+	    status="-1" />
+	    <dirname file="${versiondirectory}/${testFileName}" property="testDirectory"/>
+	    <java fork="true" classname="org.mozilla.javascript.tools.shell.Main">
+	       <!--arg value="${testDirectory}/shell.js"/-->
+	    	<arg value="c:\diplo\rhino_graphs\${fixId}_${tag}_${DSTAMP}-${TSTAMP}"/>
+	    	<arg value="-f"/>
+	       <arg value="${testDirectory}/../shell.js"/>
+	       <arg value="${versiondirectory}/${testFileName}"/>
+	       <classpath>
+	         <pathelement location="${versiondirectory}/mozilla/js/rhino/build/rhino_ibugs/js_cc.jar"/>
+	         <pathelement location="${versiondirectory}/mozilla/js/tests/src/jstests.jar"/>
+	       </classpath>
+	    </java>
+	  </target>
+
+  <target name="checkoutversion" depends="init-properties">
+    <condition property="correctParams">
+      <isset property="fixId" />
+    </condition>
+    <fail unless="correctParams"
+    message="Please specify the fix (-DfixId=...) you want to checkout."
+    status="-1" />
+    <delete failonerror="false"
+    dir="${VERSION_DIRECTORY}/${fixId}/pre-fix" />
+    <delete failonerror="false"
+    dir="${VERSION_DIRECTORY}/${fixId}/post-fix" />
+    <pathconvert targetos="unix" property="convertedpath">
+      <path location="${basedir}/repository/tags"/>
+    </pathconvert>
+    <property name="prefixurl" value="file:///${convertedpath}/PRE-FIX_${fixId}"/>
+    <property name="postfixurl" value="file:///${convertedpath}/POST-FIX_${fixId}"/>
+    <java jvm="${JVM}"
+    classname="org.tmatesoft.svn.cli.SVN" dir="${basedir}"
+    fork="true">
+      <arg value="export" />
+      <arg value="${prefixurl}" />
+      <arg value="${VERSION_DIRECTORY}/${fixId}/pre-fix" />
+      <classpath>
+        <pathelement location="${LIBDIR}/ganymed.jar" />
+        <pathelement location="${LIBDIR}/javasvn.jar" />
+        <pathelement location="${LIBDIR}/javasvn-cli.jar" />
+      </classpath>
+    </java>
+    <java jvm="${JVM}"
+    classname="org.tmatesoft.svn.cli.SVN" dir="${basedir}"
+    fork="true">
+      <arg value="export" />
+      <arg value="${postfixurl}" />
+      <arg value="${VERSION_DIRECTORY}/${fixId}/post-fix" />
+      <classpath>
+        <pathelement location="${LIBDIR}/ganymed.jar" />
+        <pathelement location="${LIBDIR}/javasvn.jar" />
+        <pathelement location="${LIBDIR}/javasvn-cli.jar" />
+      </classpath>
+    </java>
+  </target>
+
+  <target name="usage" depends="init-properties">
+    <echo message="This build-file provides a set of tasks for handling the repository and its content." />
+    <echo message="Before you can start you need to edit 'properties.xml' and specify the location of " />
+    <echo message="a java virtual machine and the directory where output is stored." />
+    <echo message="The content of the repository is described in file 'repository.xml'." />
+    <echo message="If you want to know what you can expect from the repository you should take a look at this file first." />
+    <echo message="Available targets are:" />
+    <echo message="=====================" />
+    <echo message="checkoutversion      Retrieve a certain version from the source code repository. " />
+    <echo message="                     Upon successfull build, you can find the version before and " />
+    <echo message="                     after the fix in the directory specified in 'properties.xml'." />
+    <echo message="                     Parameters: -DfixId='...' id of the fix to checkout." />
+    <echo message="buildversion         Builds a certain version that was checked out before." />
+    <echo message="                     This target builds a version of AspectJ using the native build of AspectJ." />
+    <echo message="                     It expects to find the version to be built already checked out in the" />
+    <echo message="                     directory specified in 'properties.xml'. Upon successfull build, you can find the compiled files in" />
+    <echo message="                     folder 'org.aspectj/modules/aj-build/dist" />
+    <echo message="                     Parameters: -DfixId='...' id of the fix to build" />
+    <echo message="                                 -Dtag='pre-fix|post-fix' wether to build pre-fix or post-fix version" />
+    <echo message="cleanversion         Removes artifacts from prior build attempts."/>
+    <echo message="                     Parameters: -DfixId='...' id of the fix" />
+    <echo message="                                 -Dtag='pre-fix|post-fix' wether to clean pre-fix or post-fix version" />
+    <echo message="runtest              Runs a test of the interpreter. This task calls the shell interface of Rhino " />
+    <echo message="                     and interprets the test file as well as an initialization file shell.js in the" />
+    <echo message="                     parent directory of the test file." />
+    <echo message="                     Parameters: -DfixId='...' id of the fix to run the harness for" />
+    <echo message="                                 -Dtag='pre-fix|post-fix' wether to use pre-fix or post-fix version" />
+    <echo message="                                 -DtestFileName='...' the name of the file to interpret relative to the" />
+    <echo message="                                 base directory of the version (e.g. versions/123456/pre-fix)" />
+  </target>
+  <target name="checkDefaultParams" depends="init-properties">
+    <condition property="correctDefaultParams" value="true">
+      <and>
+        <isset property="fixId" />
+        <isset property="tag" />
+      </and>
+    </condition>
+    <fail unless="correctDefaultParams"
+    message="Please specify both the fix identifier (-DfixId=...) and the tag (-Dtag=pre-fix\|post-fix) to identify the version you want to work with."
+    status="-1" />
+    <property name="versiondirectory"
+    value="${VERSION_DIRECTORY}/${fixId}/${tag}" />
+  </target>
+</project>

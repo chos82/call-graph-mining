@@ -1,0 +1,22 @@
+<project name="instrumentation" default="build" basedir=".">
+
+  <target name="build" depends="jar-callgraphutils">
+  </target>
+	
+  <property name="utils-classes" value="classes"/>
+ 
+  <target name="compile-callgraphutils">
+  	<mkdir dir="${utils-classes}"/>
+  	<javac srcdir="callgraph"
+  		   destdir="${utils-classes}" 
+  		   deprecation="on"
+  		   compiler="javac1.6">
+  	</javac>
+  </target>
+	
+  <target name="jar-callgraphutils" depends="compile-callgraphutils">
+	<jar jarfile="../lib/instrumentationutils.jar"
+		 basedir="${utils-classes}"/>
+  </target>
+	
+</project>

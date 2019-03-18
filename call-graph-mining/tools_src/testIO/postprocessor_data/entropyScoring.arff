@@ -1,0 +1,65 @@
+@RELATION EntropyScoring
+
+@ATTRIBUTE g3:calling-classes(v2->v4) INTEGER
+@ATTRIBUTE g1:call-frequency(v1->v2) INTEGER
+@ATTRIBUTE g3:calling-methods(v1->v2) INTEGER
+@ATTRIBUTE g2:calling-methods(v2->v3) INTEGER
+@ATTRIBUTE g3:call-frequency(v2->v4) INTEGER
+@ATTRIBUTE g2:calling-classes(v1->v2) INTEGER
+@ATTRIBUTE g2:calling-classes(v2->v3) INTEGER
+@ATTRIBUTE g1:calling-methods(v2->v3) INTEGER
+@ATTRIBUTE g2:called-classes(v2->v3) INTEGER
+@ATTRIBUTE g2:called-classes(v4->v1) INTEGER
+@ATTRIBUTE g2:called-methods(v1->v2) INTEGER
+@ATTRIBUTE g3:called-classes(v3->v4) INTEGER
+@ATTRIBUTE g3:calling-classes(v4->v2) INTEGER
+@ATTRIBUTE g3:called-classes(v2->v4) INTEGER
+@ATTRIBUTE g1:called-classes(v2->v3) INTEGER
+@ATTRIBUTE g3:called-methods(v2->v4) INTEGER
+@ATTRIBUTE g1:call-frequency(v3->v1) INTEGER
+@ATTRIBUTE g3:calling-methods(v4->v2) INTEGER
+@ATTRIBUTE g2:calling-methods(v4->v1) INTEGER
+@ATTRIBUTE g1:called-methods(v3->v1) INTEGER
+@ATTRIBUTE g2:called-methods(v4->v1) INTEGER
+@ATTRIBUTE g1:called-classes(v1->v2) INTEGER
+@ATTRIBUTE g1:calling-classes(v3->v1) INTEGER
+@ATTRIBUTE g2:calling-methods(v1->v2) INTEGER
+@ATTRIBUTE g3:called-methods(v3->v4) INTEGER
+@ATTRIBUTE g2:called-methods(v2->v3) INTEGER
+@ATTRIBUTE g2:called-methods(v3->v4) INTEGER
+@ATTRIBUTE g3:call-frequency(v3->v4) INTEGER
+@ATTRIBUTE g1:calling-methods(v3->v1) INTEGER
+@ATTRIBUTE g2:calling-classes(v3->v4) INTEGER
+@ATTRIBUTE g1:calling-classes(v2->v3) INTEGER
+@ATTRIBUTE g3:calling-methods(v2->v4) INTEGER
+@ATTRIBUTE g3:called-classes(v4->v2) INTEGER
+@ATTRIBUTE g3:called-classes(v1->v2) INTEGER
+@ATTRIBUTE g3:call-frequency(v4->v2) INTEGER
+@ATTRIBUTE g1:called-methods(v2->v3) INTEGER
+@ATTRIBUTE g3:called-methods(v4->v2) INTEGER
+@ATTRIBUTE g1:called-methods(v1->v2) INTEGER
+@ATTRIBUTE g3:calling-classes(v3->v4) INTEGER
+@ATTRIBUTE g3:calling-classes(v1->v2) INTEGER
+@ATTRIBUTE g1:calling-methods(v1->v2) INTEGER
+@ATTRIBUTE g3:called-methods(v1->v2) INTEGER
+@ATTRIBUTE g2:call-frequency(v3->v4) INTEGER
+@ATTRIBUTE g2:call-frequency(v2->v3) INTEGER
+@ATTRIBUTE g1:call-frequency(v2->v3) INTEGER
+@ATTRIBUTE g2:call-frequency(v4->v1) INTEGER
+@ATTRIBUTE g2:called-classes(v3->v4) INTEGER
+@ATTRIBUTE g2:calling-methods(v3->v4) INTEGER
+@ATTRIBUTE g2:called-classes(v1->v2) INTEGER
+@ATTRIBUTE g1:called-classes(v3->v1) INTEGER
+@ATTRIBUTE g3:call-frequency(v1->v2) INTEGER
+@ATTRIBUTE g2:calling-classes(v4->v1) INTEGER
+@ATTRIBUTE g2:call-frequency(v1->v2) INTEGER
+@ATTRIBUTE g1:calling-classes(v1->v2) INTEGER
+@ATTRIBUTE g3:calling-methods(v3->v4) INTEGER
+@ATTRIBUTE class {failed,passed}
+
+@DATA
+?,1,?,?,?,?,?,59,?,?,?,?,?,?,2,?,1,?,?,99,?,53,91,?,?,?,?,?,72,?,84,?,?,?,?,34,?,53,?,?,97,?,?,?,1,?,?,?,?,59,?,?,?,52,?,passed
+91,1,97,?,1,?,?,26,?,?,?,77,76,22,61,88,1,37,?,98,?,43,86,?,26,?,?,1,82,?,99,49,5,43,1,42,49,62,80,80,97,62,?,?,1,?,?,?,?,29,1,?,?,80,68,passed
+26,?,55,10,1,77,31,?,75,99,10,97,52,68,?,83,?,97,61,?,25,?,?,55,78,92,78,1,?,68,?,33,91,50,1,?,95,?,68,77,?,10,1,1,?,1,97,50,50,?,1,30,1,?,50,failed
+?,?,?,79,?,87,29,?,1,73,64,?,?,?,?,?,?,?,13,?,89,?,?,12,?,30,40,?,?,29,?,?,?,?,?,?,?,?,?,?,?,?,1,1,?,1,47,27,19,?,?,58,1,?,?,failed
+93,1,29,?,1,?,?,5,?,?,?,58,67,39,9,75,1,85,?,54,?,89,72,?,83,?,?,1,84,?,4,95,12,89,1,44,41,19,71,18,29,19,?,?,1,?,?,?,?,42,1,?,?,18,11,passed
